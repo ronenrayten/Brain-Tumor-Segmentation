@@ -1,10 +1,11 @@
 Update the following variables:
 1. root_dir = '/Users/ronenrayten/Downloads/archive2021/' #The directeroy of the original Kaggel archive. This is where you unzipped the original gz file
-2. numpy_archive_path = '/Users/ronenrayten/Downloads/' #the root directory of the processed numpy samples. This is root where you to install the converted repository. 
-3. image_path = numpy_archive_path +'new_archive/images/'  # path to the processed numpy images. This is the path tho the samples, converted data (numpy files). 
-4. label_path = numpy_archive_path +'new_archive/labels/'  # path to the processed numpy labeles. This is the path to the converted labels (numpy files)
+2. numpy_archive_path = '/Users/ronenrayten/Downloads/' #the root directory of the processed numpy samples. This is the root directory where you are going to install the converted repository. The path is being used by the data loader to load the bach of files per batch size.
 
-If you want to recreate the numpy repository, set the paths above and run the cell (currently it is marked out):
+If you want to recreate the numpy repository from scratch:
+1. unzip the original archive downloadeed from Kaggle to the root_dir as set above.
+2. set the numpy_archive_path to the directory to where the converted images are going to be saved.
+3. Run the cell (currently it is marked out in the notebook):
 ```python
 #create_repository and generate images
  files = get_file_lists()
