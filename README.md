@@ -5,10 +5,12 @@ Update the following variables:
 4. label_path = numpy_archive_path +'new_archive/labels/'  # path to the processed numpy labeles. This is the path to the converted labels (numpy files)
 
 If you want to recreate the numpy repository, set the paths above and run the cell (currently it is marked out):
+```python
 #create_repository and generate images
  files = get_file_lists()
  generate_images(files)
 
+```
 If you have the converted repository already, just set the above var paths correctly and you are set.
 
 The code is creating a dataset, mini batch is set to 10 (variable that can be changed), and the loader.
