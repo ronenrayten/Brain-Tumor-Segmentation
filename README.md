@@ -8,12 +8,13 @@ If you want to recreate the numpy repository from scratch:
 3. Run the cell (currently it is marked out in the notebook):
 ```python
 #create_repository and generate images
- files = get_file_lists()
- generate_images(files)
+create_repository()
+files = get_file_lists()
+generate_images(files)
 
 ```
 If you have the converted repository already, just set the above var paths correctly and you are set.
 
 The code is creating a dataset, mini batch is set to 10 (variable that can be changed), and the loader.
 Transformer - normalize the batch (mean and std) and convert to tensor
-The Tensors are (channels x W x H x Voxels) which is for the image (4x130x160x128) and the label (1x130x160x128)
+The Tensors are (channels x W x H x Voxels) which is for the image (4x130x160x128) and the label (4x130x160x128). The label has 4 classes and transformed to categorical, this is whay the first dim is 4
