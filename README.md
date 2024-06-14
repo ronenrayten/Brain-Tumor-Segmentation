@@ -3,7 +3,7 @@ Update the following variables:
 2. numpy_archive_path = '/Users/ronenrayten/Downloads/' #the root directory of the processed numpy samples. This is the root directory where you are going to install the converted repository. The path is being used by the data loader to load the bach of files per batch size.
 
 If you want to recreate the numpy repository from scratch:
-1. unzip the original archive downloadeed from Kaggle to the root_dir as set above.
+1. unzip the original archive downloaded from Kaggle to the root_dir as defined above.
 2. set the numpy_archive_path to the directory to where the converted images are going to be saved.
 3. Run the cell (currently it is marked out in the notebook):
 ```python
