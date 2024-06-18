@@ -78,7 +78,6 @@ def InitWeightsKaiNorm( oLayer: nn.Module, tuLyrClas: Tuple = (nn.Linear, nn.Con
     if isinstance(oLayer, tuLyrClas):
         nn.init.kaiming_normal_(oLayer.weight.data)
 
-
 def RunEpoch(oModel: nn.Module, dlData: DataLoader, hL: Callable, hS: Callable, oOpt: Optional[Optimizer] = None, opMode: NNMode = NNMode.TRAIN) -> Tuple[float, float]:
     """
     Runs a single Epoch (Train / Test) of a model.  
@@ -139,13 +138,15 @@ def RunEpoch(oModel: nn.Module, dlData: DataLoader, hL: Callable, hS: Callable, 
             vY_index = vY.argmax(dim=1) if vY.dtype == torch.float64 else vY
             mZ_index = mZ.argmax(dim=1) if mZ.dtype == torch.float32 else mZ
 
-            #print(f"Shape of mZ_index: {mZ_index.shape}, dtype: {mZ_index.dtype}")
-            #print(f"Shape of vY_index: {vY_index.shape}, dtype: {vY_index.dtype}")
+            # Debugging: Print the shapes of mZ_index and vY_index
+            # print(f"Shape of mZ_index: {mZ_index.shape}, dtype: {mZ_index.dtype}")
+            # print(f"Shape of vY_index: {vY_index.shape}, dtype: {vY_index.dtype}")
             
             try:
                 valScore = hS(mZ_index, vY_index)
-                #print(f"Shape of preds: {mZ_index.shape}, dtype: {mZ_index.dtype}")
-                #print(f"Shape of target: {vY_index.shape}, dtype: {vY_index.dtype}")
+                # Debugging: Print the shapes of preds and target in the scoring function
+                # print(f"Shape of preds: {mZ_index.shape}, dtype: {mZ_index.dtype}")
+                # print(f"Shape of target: {vY_index.shape}, dtype: {vY_index.dtype}")
             except Exception as e:
                 print(f"Error during scoring: {e}")
                 raise e
@@ -163,8 +164,6 @@ def RunEpoch(oModel: nn.Module, dlData: DataLoader, hL: Callable, hS: Callable, 
     return epochLoss / numSamples, epochScore / numSamples
 
 
-# Training Model Loop Function
-
 def TrainModel(oModel: nn.Module, dlTrain: DataLoader, dlVal: DataLoader, oOpt: Optimizer, numEpoch: int, hL: Callable, hS: Callable, oSch: Optional[LRScheduler] = None, oTBWriter: Optional[SummaryWriter] = None) -> Tuple[nn.Module, List, List, List, List]:
     lTrainLoss = []
     lTrainScore = []
@@ -180,9 +179,19 @@ def TrainModel(oModel: nn.Module, dlTrain: DataLoader, dlVal: DataLoader, oOpt: 
         startTime = time.time()
         trainLoss, trainScr = RunEpoch(oModel, dlTrain, hL, hS, oOpt, opMode = NNMode.TRAIN)
         valLoss, valScr = RunEpoch(oModel, dlVal, hL, hS, oOpt, opMode = NNMode.INFERENCE)
+
         if oSch is not None:
-            learnRate = oSch.get_last_lr()[0]
-            oSch.step()
+            # Debugging statement
+            print(f"Scheduler is provided: {oSch}")
+            try:
+                learnRate = oSch.get_last_lr()[0]
+                oSch.step()
+            except AttributeError as e:
+                print(f"Error: {e}")
+                raise e
+        else:
+             print(f"Scheduler is null")
+
         epochTime = time.time() - startTime
 
         lTrainLoss.append(trainLoss)
@@ -211,15 +220,13 @@ def TrainModel(oModel: nn.Module, dlTrain: DataLoader, dlVal: DataLoader, oOpt: 
                     dCheckPoint['Scheduler'] = oSch.state_dict()
                 torch.save(dCheckPoint, 'BestModel.pt')
                 print(' | <-- Checkpoint!', end='')
-            except:
-                print(' | <-- Failed!', end='')
+            except Exception as e:
+                print(f' | <-- Failed! Error: {e}', end='')
         print(' |')
 
-    # Load best model ("Early Stopping")
-    # dCheckPoint = torch.load('BestModel.pt')
-    # oModel.load_state_dict(dCheckPoint['Model'])
+    return oModel, lTrainLoss, lTrainScore, lValLoss, lValScore
 
-    return oModel, lTrainLoss, lTrainScore, lValLoss, lValScore, lLearnRate
+
 
 
 
