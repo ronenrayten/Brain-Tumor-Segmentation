@@ -63,6 +63,6 @@ def visualization_model_result_as_2d(model, sample_id, z_slice=64, file_path=Non
 
     if file_path:
         plt.savefig(file_path)
-        print()
+        print(f"File saved at {file_path}")
     else:
         plt.show()
