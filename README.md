@@ -32,7 +32,7 @@ If you want to recreate the numpy repository from scratch:
 3. set CREATE_REPOSITORY in .env to true andrRun the cell where  #create_repository and generate images comment
 
 
-```
+
 If you have the converted repository already, just set the above var paths correctly and you are set and set CREATE_REPOSITORY in env to false.
 
 The code is creating a dataset, mini batch is set to 1 (variable that can be changed), and the loader.
