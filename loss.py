@@ -199,16 +199,19 @@ class FocalLoss(nn.Module):
 
 class DiceLoss(nn.Module):
     def __init__(self,num_classes=4,ignore_index=0,average="macro"):
-        super().__init__()
-        self.ignore_index = ignore_index
-        self.average =average
-        self.num_classes = num_classes
-        self.loss = Dice(num_classes,ignore_index,average)
+        super(DiceLoss, self).__init__()
+        self.smooth = 1e-5
+        
     def forward(self, inputs, targets):
-        pred_probs = F.softmax(inputs, dim=1)
+        predict = F.softmax(inputs, dim=1)
 
-        # Convert one-hot encoded labels to class indices
-        labels_indices = torch.argmax(targets, dim=1)  # Shape: (batch_size, width, height, depth)
+        intersection = torch.sum(predict * targets,(4,3,2))  # compute the intersection score per class
+        union = torch.sum(predict, (4,3,2)) + torch.sum(targets,(4,3,2))  # compute the sum per class
+        
+        dice_coef = (2 * intersection + self.smooth) / (union + self.smooth)  # dice score per class
 
-        return torch.tensor(1-self.loss(pred_probs,labels_indices),requires_grad=True)
+        # this is actualy Macro menthod - calculating the ratio per class and averaging 
+        dice_loss = 1 - torch.mean(dice_coef[0][-3:])  # take only classes 1,2,3
 
+        return dice_loss
+        
