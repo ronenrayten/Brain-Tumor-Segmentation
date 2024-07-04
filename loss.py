@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Optional
 
 import torch
-from torch import nn
+from torch import long, nn
+from torchmetrics import Dice
 
 from kornia.core import Tensor, tensor
 from kornia.core.check import KORNIA_CHECK, KORNIA_CHECK_IS_TENSOR, KORNIA_CHECK_SHAPE
@@ -15,6 +16,9 @@ from torch.autograd import Variable
 from typing import Optional, Sequence
 from torch import Tensor
 
+
+
+        
 
 class DiceBCELoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
@@ -191,3 +195,20 @@ class FocalLoss(nn.Module):
 
     def forward(self, pred: Tensor, target: Tensor) -> Tensor:
         return focal_loss(pred, target, self.alpha, self.gamma, self.reduction, self.weight)
+
+
+class DiceLoss(nn.Module):
+    def __init__(self,num_classes=4,ignore_index=0,average="macro"):
+        super().__init__()
+        self.ignore_index = ignore_index
+        self.average =average
+        self.num_classes = num_classes
+        self.loss = Dice(num_classes,ignore_index,average)
+    def forward(self, inputs, targets):
+        pred_probs = F.softmax(inputs, dim=1)
+
+        # Convert one-hot encoded labels to class indices
+        labels_indices = torch.argmax(targets, dim=1)  # Shape: (batch_size, width, height, depth)
+
+        return torch.tensor(1-self.loss(pred_probs,labels_indices),requires_grad=True)
+
