@@ -147,7 +147,7 @@ def RunEpoch(oModel: nn.Module, dlData: DataLoader, hL: Callable, hS: Callable, 
             epochScore += batchSize * valScore.item()
             numSamples += batchSize
             epochTime = time.time() - start_epcoh
-
+            del mZ, vY_index, mZ_index
         print(f'{"Train" if opMode == NNMode.TRAIN else "Val"} - Iteration: {(ii + 1):3d} / {numBatches}: loss = {valLoss:.6f} epoch time:{epochTime:5.2f}')
     total_time = time.time() - start
     print('', end='\r')
