@@ -1,23 +1,14 @@
 
-# Python STD
-from enum import auto, Enum, unique
-import math
-
-# Data
-import numpy as np
-# import pandas as pd
-import scipy as sp
-
 # Machine Learning
 
 # Deep Learning
 import torch
 import torch.nn            as nn
-import torch.nn.functional as F
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+import torch.nn.functional as F
 
 # Image Processing / Computer Vision
 
@@ -25,8 +16,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 # Auxiliary
 
-# Visualization
-import matplotlib.pyplot as plt
+
 
 # Miscellaneous
 import time
@@ -36,7 +26,7 @@ from DeepLearningBlocks import NNMode
 
 
 # Typing
-from typing import Any, Callable, Dict, Generator, List, Optional, Self, Set, Tuple, Union
+from typing import  Callable, List, Optional, Self, Tuple
 
 # Auxiliary Classes
 
@@ -106,6 +96,7 @@ def RunEpoch(oModel: nn.Module, dlData: DataLoader, hL: Callable, hS: Callable, 
     numBatches = len(dlData)
     start = time.time()
     runDevice = next(oModel.parameters()).device  # Get the device (CPU/GPU) where the model is located
+    
 
     if opMode == NNMode.TRAIN:
         oModel.train(True)
@@ -123,20 +114,21 @@ def RunEpoch(oModel: nn.Module, dlData: DataLoader, hL: Callable, hS: Callable, 
 
         if opMode == NNMode.TRAIN:
             mZ = oModel(mX)
-            valLoss = hL(mZ, vY)
-
+            valLoss = hL(mZ, vY)            
             oOpt.zero_grad()
             valLoss.backward()
             oOpt.step()
         else:
             with torch.no_grad():
                 mZ = oModel(mX)
+                
                 valLoss = hL(mZ, vY)
+                
 
         with torch.no_grad():
             # Convert vY and mZ to index tensors if they are not already
             vY_index = vY.argmax(dim=1) if vY.dtype == torch.float64 else vY
-            mZ_index = mZ.argmax(dim=1) if mZ.dtype == torch.float32 else mZ
+            mZ_index = F.softmax(mZ, dim=1) if mZ.dtype == torch.float32 else mZ
 
             # Debugging: Print the shapes of mZ_index and vY_index
             # print(f"Shape of mZ_index: {mZ_index.shape}, dtype: {mZ_index.dtype}")
