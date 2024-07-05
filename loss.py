@@ -211,7 +211,7 @@ class DiceLoss(nn.Module):
         dice_coef = (2 * intersection + self.smooth) / (union + self.smooth)  # dice score per class
 
         # this is actualy Macro menthod - calculating the ratio per class and averaging 
-        dice_loss = 1 - torch.mean(dice_coef[0][-3:])  # take only classes 1,2,3
+        dice_loss = 1 - torch.mean(dice_coef[0][:])  # take all classes
 
         return dice_loss
         
