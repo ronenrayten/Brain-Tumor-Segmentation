@@ -30,18 +30,37 @@ class FocalLoss(nn.Module):
 
     def forward(self, input, target):
         '''
-        input (B, N)
-        target (B)
-        '''
-        minus_logpt = self.CE(input, target)
-        pt = torch.exp(-minus_logpt) # don't forget the minus here
-        focal_loss = self.alpha*(1-pt)**self.gamma * minus_logpt
+       Compute the focal loss between `inputs` and `targets`.
         
+        Parameters:
+        - inputs: predictions for each example (a tensor of shape (batch_size, num_classes, depth, height, width)).
+        - targets: ground truth labels for each example (a one-hot encoded tensor of shape (batch_size, num_classes, depth, height, width)).
+        
+        Returns:
+        - loss: the computed focal loss.
+        '''
+        # Convert targets from one-hot encoding to class indices
+        targets_indices = torch.argmax(target, dim=1)  # Shape: (batch_size, depth, height, width)
+
+        # Flatten the input and target tensors to shape (batch_size * depth * height * width, num_classes) and (batch_size * depth * height * width), respectively
+        inputs_flat = input.view(-1, input.size(1))
+        targets_indices_flat = targets_indices.view(-1)
+
+        # Compute the cross-entropy loss
+        ce_loss = self.ce_loss(inputs_flat, targets_indices_flat)
+
+        # Compute the probabilities
+        probs = torch.exp(-ce_loss)
+
+        # Compute the focal loss
+        focal_loss = self.alpha * (1 - probs) ** self.gamma * ce_loss
+
         if self.reduction == 'mean':
-            focal_loss = focal_loss.mean()
+            return focal_loss.mean()
         elif self.reduction == 'sum':
-            focal_loss = focal_loss.sum()
-        return focal_loss
+            return focal_loss.sum()
+        else:
+            return focal_loss
 
 
 class DiceLoss(nn.Module):
