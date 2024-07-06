@@ -26,7 +26,7 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
         self.reduction = reduction
         self.weight = weight
-        self.CE = nn.CrossEntropyLoss(weight=self.weight,reduction='none')
+        self.CE = nn.CrossEntropyLoss(reduction='none',weight=self.weight)
 
     def forward(self, input, target):
         '''
@@ -47,7 +47,7 @@ class FocalLoss(nn.Module):
         targets_indices_flat = targets_indices.view(-1)
 
         # Compute the cross-entropy loss
-        ce_loss = self.CE(inputs_flat, targets_indices_flat,weight=self.weight)
+        ce_loss = self.CE(inputs_flat, targets_indices_flat)
 
         # Compute the probabilities
         probs = torch.exp(-ce_loss)
