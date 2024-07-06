@@ -47,7 +47,7 @@ class FocalLoss(nn.Module):
         targets_indices_flat = targets_indices.view(-1)
 
         # Compute the cross-entropy loss
-        ce_loss = self.ce_loss(inputs_flat, targets_indices_flat)
+        ce_loss = self.CE(inputs_flat, targets_indices_flat,weight=self.weight)
 
         # Compute the probabilities
         probs = torch.exp(-ce_loss)
