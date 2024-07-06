@@ -26,7 +26,7 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
         self.reduction = reduction
         self.weight = weight
-        self.CE = nn.CrossEntropyLoss(weight=self.weight)
+        self.CE = nn.CrossEntropyLoss(weight=self.weight,reduction='none')
 
     def forward(self, input, target):
         '''
