@@ -69,7 +69,7 @@ class DiceLoss(nn.Module):
         self.smooth = 1e-5
         
     def forward(self, inputs, targets):
-        predict = F.softmax(inputs, dim=1)
+        predict = F.log_softmax(inputs, dim=1).exp()
 
         intersection = torch.sum(predict * targets,(4,3,2))  # compute the intersection score per class
         union = torch.sum(predict, (4,3,2)) + torch.sum(targets,(4,3,2))  # compute the sum per class
