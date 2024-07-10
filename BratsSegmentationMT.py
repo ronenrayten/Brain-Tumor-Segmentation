@@ -429,8 +429,8 @@ def main() :
 
     oModel = UNet3D(in_channels=number_of_channels, num_classes=4)
 
-    check_path = os.getcwd()
-    fullpath = check_path + '\\Project2\\BestModel.pt'
+    check_path = os.path.abspath(os.curdir)
+    fullpath = check_path + '\\BestModel.pt'
     checkpoint_filename = Path(fullpath)
 
     if checkpoint_filename.is_file() :
