@@ -15,6 +15,7 @@ from torch.utils.tensorboard import SummaryWriter
 import torchinfo
 from torchmetrics.classification import MulticlassAccuracy
 from torchvision.transforms import v2 as TorchVisionTrns
+import torchvision.transforms.functional as TF
 
 
 # Miscellaneous
@@ -84,7 +85,7 @@ dropP = 0.2 #<! Dropout Layer
 # Training
 batchSize   = 1
 numWork     = 2 #<! Number of workers
-nEpochs     = 5
+nEpochs     = 10
 
 # Visualization
 numImg = 3
@@ -291,9 +292,6 @@ class Normalize3D(object):
 # Label: batch_size x number of images (1) x image_size (240x240x155)
 ###################################################################
 
-
-
-
 class ImageDatasetFromDisk(Dataset):
     def __init__(self, mX, vY, transform=None, target_transform=None):
         
@@ -315,12 +313,81 @@ class ImageDatasetFromDisk(Dataset):
          label = np.load(f)
          label = np.moveaxis(label, -1, 0)
         
+        ###Insert image augmentation here
+
+
+        ###End of image augmentation
+
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
         return image, label
     
+class ImageTrainDatasetFromDisk(Dataset):
+    def __init__(self, mX, vY, transform=None, target_transform=None):
+        
+        self.images = mX
+        self.labels = vY
+        self.transform = transform
+        self.target_transform = target_transform
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        
+        with gzip.open(image_path+self.images[idx], 'rb') as f:
+        # Load the decompressed data into a NumPy array
+            image = np.load(f)
+            image = np.moveaxis(image, -1, 0)
+
+         
+        with gzip.open(label_path+self.labels[idx], 'rb') as f:
+            label = np.load(f)
+            label = np.moveaxis(label, -1, 0)
+        
+        ###Insert image augmentation here
+        ###Work with torchvision
+        if str_to_bool(os.getenv('AUGMENT_DATA')):
+            imaget = torch.from_numpy(image)
+            labelt = torch.from_numpy(label)
+
+            oElasTrans = TorchVisionTrns.ElasticTransform(sigma=2.)
+            state=torch.get_rng_state() #get the random state
+            imaget = oElasTrans(imaget)
+            torch.set_rng_state(state)  #reset the random state so label is identical to image
+            labelt = oElasTrans(labelt)
+
+            # Random horizontal flipping
+            if random.random() > 0.5:
+                imaget = TF.hflip(imaget)
+                labelt = TF.hflip(labelt)
+
+            # Random vertical flipping
+            if random.random() > 0.5:
+                imaget = TF.vflip(imaget)
+                labelt = TF.vflip(labelt)
+
+            image=imaget.numpy()
+            label=labelt.numpy()
+        ###Back to Numpy
+
+        image = image * np.random.uniform(low=0.8, high = 1.2)
+
+        org_shape = np.shape(image)
+        image = image.reshape(-1, image.shape[-1])
+        image = pre.MinMaxScaler().fit_transform(image)
+        image = image.reshape(*org_shape)
+        image = np.moveaxis(image, 0, -1)
+
+        ###End of image augmentation
+        
+        if self.transform:
+            image = self.transform(image)
+        if self.target_transform:
+            label = self.target_transform(label)
+        return image, label
 
 def main() :
 
@@ -361,7 +428,7 @@ def main() :
     vYTrain.sort()
     mXTest.sort()
     vYTest.sort()
-    dsTrain = ImageDatasetFromDisk(mXTrain,vYTrain)
+    dsTrain = ImageTrainDatasetFromDisk(mXTrain,vYTrain)
     dsTest = ImageDatasetFromDisk(mXTest,vYTest)
 
     print(f'The training data set data len: {(len(dsTrain))}')
@@ -391,7 +458,7 @@ def main() :
 
     #put in if __name__ = 'main'
     dlTrain  = torch.utils.data.DataLoader(dsTrain, shuffle = True, batch_size = 1 * batchSize,drop_last=True, num_workers = 4, pin_memory=True,persistent_workers = True)
-    dlTest   = torch.utils.data.DataLoader(dsTest, shuffle = False, batch_size = 2 * batchSize,drop_last=True, num_workers = 4, pin_memory = True,persistent_workers = True)
+    dlTest   = torch.utils.data.DataLoader(dsTest, shuffle = False, batch_size = 1 * batchSize,drop_last=True, num_workers = 2, pin_memory = True,persistent_workers = True)
 
 
     # Iterate on the Loader
